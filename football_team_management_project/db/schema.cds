@@ -121,7 +121,8 @@ entity Inscripciones : cuid {
 }
 entity Plantillas : cuid {
     jugador     : Association to Jugadores not null;
-    inscripcion : Association to Inscripciones not null;    
+    inscripcion : Association to Inscripciones not null;
+    liga        : Association to Ligas not null;
     dorsal      : Integer;
     fecha_alta  : Date;
     fecha_baja  : Date;
@@ -178,9 +179,9 @@ entity Amonestaciones : cuid {
     tipo          : TipoAmonestacion not null @assert.range;
 }
 
-entity Sanciones {
-    key jugador             : Association to Jugadores not null;
-    key liga                : Association to Ligas not null;
+entity Sanciones : cuid {
+    jugador             : Association to Jugadores not null;
+    liga                : Association to Ligas not null;
     partido_origen      : Association to Partidos;
     motivo              : String(255);
     partidos_suspension : Integer not null;
