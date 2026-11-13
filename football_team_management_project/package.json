@@ -13,5 +13,32 @@
   "scripts": {
     "start": "cds-serve"
   },
-  "private": true
+  "private": true,
+  "cds": {
+    "requires": {
+      "auth": {
+        "kind": "mocked",
+        "users": {
+          "admin@liga.es": {
+            "password": "admin",
+            "roles": [
+              "admin"
+            ]
+          },
+          "delegado@liga.es": {
+            "password": "delegado",
+            "roles": [
+              "admin_equipo"
+            ]
+          },
+          "jugador@liga.es": {
+            "password": "jugador",
+            "roles": [
+              "jugador"
+            ]
+          }
+        }
+      }
+    }
+  }
 }
