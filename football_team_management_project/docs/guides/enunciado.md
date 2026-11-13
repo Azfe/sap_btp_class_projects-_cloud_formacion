@@ -1,6 +1,6 @@
 # Football team management project
 
-Generar un proyecto de gestion de equipos de futbol. Necesito tener un directorio de equipos con un directorio de jugadores. Los jugadores pueden pertenecer a varios equipos siempre que no esten en dos equipos que jueguen la misma liga. Las ligas son de diario, sábado mañana, domingo mañana, sábado tarde y domingo tarde.
+Generar un proyecto de gestión de equipos de fútbol. Necesito tener un directorio de equipos con un directorio de jugadores. Los jugadores pueden pertenecer a varios equipos siempre que no esten en dos equipos que jueguen la misma liga. Las ligas son de diario, sábado mañana, domingo mañana, sábado tarde y domingo tarde.
 Necesito tener enfrentamientos con horarios y sedes. Y necesito almacenar en cada enfrentamiento los jugadores que han participado, los goleadores y amonestados.
 Posibles funcionalidades que se pueden añadir.
 
