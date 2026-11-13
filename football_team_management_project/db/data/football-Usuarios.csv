@@ -1,0 +1,4 @@
+ID;email;nombre;rol;jugador_ID
+77777777-0000-4000-8000-000000000001;admin@liga.es;Administración de la liga;admin;
+77777777-0000-4000-8000-000000000002;delegado@liga.es;Delegado del Atlético Robledal;admin_equipo;
+77777777-0000-4000-8000-000000000003;jugador@liga.es;Adrián García Sánchez;jugador;55555555-0000-4000-8000-000000000001
