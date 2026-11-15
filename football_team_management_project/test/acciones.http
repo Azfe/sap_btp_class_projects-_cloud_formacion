@@ -1,0 +1,160 @@
+@base = http://localhost:4004/odata/v4
+@ligaDiario = 11111111-0000-4000-8000-000000000001
+@robledalDiario = 44444444-0000-4000-8000-000000000001
+@p1 = {{partidos.response.body.$.value[0].ID}}
+@p2 = {{partidos.response.body.$.value[1].ID}}
+
+### 1. Generar el calendario (esperado: 30)
+POST {{base}}/admin/Ligas({{ligaDiario}})/generarCalendario
+Authorization: Basic admin@liga.es:admin
+Content-Type: application/json
+
+{ "fechaInicio": "2026-11-16", "idaYVuelta": true }
+
+### 2. Regenerar sin partidos jugados (esperado: 30 otra vez)
+POST {{base}}/admin/Ligas({{ligaDiario}})/generarCalendario
+Authorization: Basic admin@liga.es:admin
+Content-Type: application/json
+
+{ "fechaInicio": "2026-11-16", "idaYVuelta": true }
+
+### 3. Partidos de Atlético Robledal en casa, por fecha
+# @name partidos
+GET {{base}}/admin/Partidos?$filter=local_ID%20eq%20{{robledalDiario}}&$orderby=fecha_hora&$top=2
+Authorization: Basic admin@liga.es:admin
+
+### 4. Jugadores disponibles: no debe aparecer la ficha …002, que está sancionada
+GET {{base}}/admin/Partidos({{p1}})/jugadoresDisponibles()
+Authorization: Basic admin@liga.es:admin
+
+### 5. Sancionado en el acta (esperado: 409)
+POST {{base}}/admin/Partidos({{p1}})/registrarParticipacion
+Authorization: Basic admin@liga.es:admin
+Content-Type: application/json
+
+{ "plantilla": "66666666-0000-4000-8000-000000000002", "titular": true }
+
+### 6a. Jugador en el acta (esperado: 200)
+POST {{base}}/admin/Partidos({{p1}})/registrarParticipacion
+Authorization: Basic admin@liga.es:admin
+Content-Type: application/json
+
+{ "plantilla": "66666666-0000-4000-8000-000000000001", "titular": true, "minutos": 90 }
+
+### 6b. Otro jugador en el acta (esperado: 200)
+POST {{base}}/admin/Partidos({{p1}})/registrarParticipacion
+Authorization: Basic admin@liga.es:admin
+Content-Type: application/json
+
+{ "plantilla": "66666666-0000-4000-8000-000000000003", "titular": true, "minutos": 70 }
+
+### 7a. Gol de penalti
+POST {{base}}/admin/Partidos({{p1}})/registrarGol
+Authorization: Basic admin@liga.es:admin
+Content-Type: application/json
+
+{ "plantilla": "66666666-0000-4000-8000-000000000001", "minuto": 23, "tipo": "penalti" }
+
+### 7b. Gol en propia meta (suma al rival)
+POST {{base}}/admin/Partidos({{p1}})/registrarGol
+Authorization: Basic admin@liga.es:admin
+Content-Type: application/json
+
+{ "plantilla": "66666666-0000-4000-8000-000000000003", "minuto": 60, "tipo": "propia_meta" }
+
+### 8. Gol de alguien que no está en el acta (esperado: 409)
+POST {{base}}/admin/Partidos({{p1}})/registrarGol
+Authorization: Basic admin@liga.es:admin
+Content-Type: application/json
+
+{ "plantilla": "66666666-0000-4000-8000-000000000004", "minuto": 80 }
+
+### 9. Tarjeta roja
+POST {{base}}/admin/Partidos({{p1}})/registrarAmonestacion
+Authorization: Basic admin@liga.es:admin
+Content-Type: application/json
+
+{ "plantilla": "66666666-0000-4000-8000-000000000003", "minuto": 70, "tipo": "roja" }
+
+### 10. Finalizar: crea la sanción automática por la roja
+POST {{base}}/admin/Partidos({{p1}})/finalizar
+Authorization: Basic admin@liga.es:admin
+Content-Type: application/json
+
+{}
+
+### 11. Acta cerrada (esperado: 409)
+POST {{base}}/admin/Partidos({{p1}})/registrarGol
+Authorization: Basic admin@liga.es:admin
+Content-Type: application/json
+
+{ "plantilla": "66666666-0000-4000-8000-000000000001", "minuto": 85 }
+
+### 12. Regenerar con partidos jugados (esperado: 409)
+POST {{base}}/admin/Ligas({{ligaDiario}})/generarCalendario
+Authorization: Basic admin@liga.es:admin
+Content-Type: application/json
+
+{ "fechaInicio": "2026-11-16", "idaYVuelta": true }
+
+### 13. Sanciones: debe haber 2, la de los CSV y la de la roja
+GET {{base}}/admin/Sanciones
+Authorization: Basic admin@liga.es:admin
+
+### 14. El expulsado no entra en el siguiente partido (esperado: 409)
+POST {{base}}/admin/Partidos({{p2}})/registrarParticipacion
+Authorization: Basic admin@liga.es:admin
+Content-Type: application/json
+
+{ "plantilla": "66666666-0000-4000-8000-000000000003" }
+
+### 15. Aplazar el segundo partido (no descuenta sanción)
+POST {{base}}/admin/Partidos({{p2}})/aplazar
+Authorization: Basic admin@liga.es:admin
+Content-Type: application/json
+
+{}
+
+### 16a. Marcador como jugador (esperado: 1-1)
+GET {{base}}/consulta/Partidos({{p1}})/marcador()
+Authorization: Basic jugador@liga.es:jugador
+
+### 16b. Clasificación
+GET {{base}}/consulta/clasificacion(liga={{ligaDiario}})
+Authorization: Basic jugador@liga.es:jugador
+
+### 16c. Máximos goleadores
+GET {{base}}/consulta/goleadores(liga={{ligaDiario}},top=5)
+Authorization: Basic jugador@liga.es:jugador
+
+### 17. El jugador intenta usar AdminService (esperado: 403)
+GET {{base}}/admin/Ligas
+Authorization: Basic jugador@liga.es:jugador
+
+### 18. Delegado: alta de un jugador nuevo en su equipo (esperado: 200)
+POST {{base}}/equipo/Inscripciones({{robledalDiario}})/altaJugador
+Authorization: Basic delegado@liga.es:delegado
+Content-Type: application/json
+
+{ "documento_identidad": "99999999A", "nombre": "Prueba", "apellidos": "Nueva Ficha", "dorsal": 30 }
+
+### 19. Delegado: alta en un equipo ajeno (esperado: 403)
+POST {{base}}/equipo/Inscripciones(44444444-0000-4000-8000-000000000002)/altaJugador
+Authorization: Basic delegado@liga.es:delegado
+Content-Type: application/json
+
+{ "documento_identidad": "99999998B", "nombre": "Otro", "apellidos": "Jugador" }
+
+### 20a. Delegado: baja de una ficha de Atlético Robledal (esperado: 200)
+POST {{base}}/equipo/Plantillas(66666666-0000-4000-8000-000000000004)/darDeBaja
+Authorization: Basic delegado@liga.es:delegado
+Content-Type: application/json
+
+{ "fecha": "2026-11-20" }
+
+### 20b. El mismo jugador intenta fichar por Racing en la misma liga (esperado: 409)
+POST {{base}}/equipo/Inscripciones(44444444-0000-4000-8000-000000000003)/altaJugador
+Authorization: Basic delegado@liga.es:delegado
+Content-Type: application/json
+
+{ "documento_identidad": "10000003T", "nombre": "Daniel", "apellidos": "x" }
