@@ -57,10 +57,14 @@ El navegador recuerda el usuario. Para cambiar de usuario hay que abrir una vent
 
 Crear `test/acciones.http` con el contenido siguiente y ejecutar las peticiones **en orden** con el enlace "Send Request" que aparece encima de cada una. La petición 3 guarda los IDs de dos partidos en `p1` y `p2`, y las siguientes los reutilizan.
 
+Las variables `p1` y `p2` se declaran al principio del fichero. Si se escriben justo debajo de una petición, REST Client las envía como cuerpo o como cabeceras, y el servidor responde con un error.
+
 ```http
 @base = http://localhost:4004/odata/v4
 @ligaDiario = 11111111-0000-4000-8000-000000000001
 @robledalDiario = 44444444-0000-4000-8000-000000000001
+@p1 = {{partidos.response.body.$.value[0].ID}}
+@p2 = {{partidos.response.body.$.value[1].ID}}
 
 ### 1. Generar el calendario (esperado: 30)
 POST {{base}}/admin/Ligas({{ligaDiario}})/generarCalendario
@@ -80,9 +84,6 @@ Content-Type: application/json
 # @name partidos
 GET {{base}}/admin/Partidos?$filter=local_ID%20eq%20{{robledalDiario}}&$orderby=fecha_hora&$top=2
 Authorization: Basic admin@liga.es:admin
-
-@p1 = {{partidos.response.body.$.value[0].ID}}
-@p2 = {{partidos.response.body.$.value[1].ID}}
 
 ### 4. Jugadores disponibles: no debe aparecer la ficha …002, que está sancionada
 GET {{base}}/admin/Partidos({{p1}})/jugadoresDisponibles()
