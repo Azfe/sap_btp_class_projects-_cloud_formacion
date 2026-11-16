@@ -178,7 +178,9 @@ export default class AdminService extends cds.ApplicationService {
 
     this.on('jugadoresDisponibles', Partidos, async req => {
       const partido = await SELECT.one.from(req.subject)
-      const fichas = await SELECT.from(Plantillas).where({ inscripcion_ID: { in: [partido.local_ID, partido.visitante_ID] } })
+      const fichas = await SELECT.from(Plantillas, f => {
+        f`*`, f.jugador(j => { j.nombre, j.apellidos }), f.inscripcion(i => { i.ID, i.equipo(e => { e.nombre }) })
+      }).where({ inscripcion_ID: { in: [partido.local_ID, partido.visitante_ID] } }).orderBy('dorsal')
       const disponibles = []
       for (const ficha of fichas) {
         if (ficha.fecha_baja && ficha.fecha_baja <= fechaLocal(partido.fecha_hora)) continue
