@@ -4,7 +4,12 @@ service EquipoService @(requires: 'admin_equipo') {
 
   @readonly
   @restrict: [{ grant: '*', where: 'exists equipo.admins[usuario.email = $user]' }]
-  entity Inscripciones as projection on db.Inscripciones actions {
+  entity Inscripciones as projection on db.Inscripciones {
+      *,
+      equipo.nombre  as equipoNombre,
+      liga.nombre    as ligaNombre,
+      liga.temporada as temporada
+    } actions {
     action altaJugador(documento_identidad : String @mandatory, nombre : String @mandatory,
                        apellidos : String @mandatory, fecha_nacimiento : Date, dorsal : Integer) returns Plantillas;
   };
