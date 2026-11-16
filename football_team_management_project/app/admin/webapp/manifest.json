@@ -1,0 +1,58 @@
+{
+  "_version": "2.0.0",
+  "sap.app": {
+    "id": "football.admin",
+    "type": "application",
+    "title": "Administración de la liga",
+    "applicationVersion": { "version": "1.0.0" },
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/admin/",
+        "type": "OData",
+        "settings": { "odataVersion": "4.0" }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "deviceTypes": { "desktop": true, "tablet": true, "phone": true }
+  },
+  "sap.ui5": {
+    "dependencies": {
+      "minUI5Version": "1.148.0",
+      "libs": { "sap.m": {}, "sap.ui.core": {}, "sap.ui.layout": {} }
+    },
+    "models": {
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": { "autoExpandSelect": true, "operationMode": "Server" }
+      }
+    },
+    "rootView": {
+      "viewName": "football.admin.view.App",
+      "type": "XML",
+      "id": "appView"
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "type": "View",
+        "viewType": "XML",
+        "path": "football.admin.view",
+        "controlId": "app",
+        "controlAggregation": "pages"
+      },
+      "routes": [
+        { "pattern": "", "name": "ligas", "target": "ligas" },
+        { "pattern": "ligas/{id}", "name": "liga", "target": "liga" },
+        { "pattern": "partidos/{id}", "name": "partido", "target": "partido" }
+      ],
+      "targets": {
+        "ligas": { "id": "ligas", "name": "Ligas" },
+        "liga": { "id": "liga", "name": "Liga" },
+        "partido": { "id": "partido", "name": "Partido" }
+      }
+    }
+  }
+}
