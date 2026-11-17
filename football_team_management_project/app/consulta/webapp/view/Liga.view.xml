@@ -1,0 +1,103 @@
+<mvc:View
+  controllerName="football.consulta.controller.Liga"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  displayBlock="true">
+  <App>
+    <Page title="Consulta de ligas">
+      <subHeader>
+        <Toolbar>
+          <Label text="Liga:" labelFor="selLiga"/>
+          <Select id="selLiga" forceSelection="false" width="20rem" change=".onCambiarLiga"
+            items="{path: '/Ligas', sorter: {path: 'nombre'}}">
+            <core:Item key="{ID}" text="{nombre} {temporada}"/>
+          </Select>
+        </Toolbar>
+      </subHeader>
+
+      <IconTabBar id="pestanas" expandable="false">
+        <items>
+          <IconTabFilter text="Clasificación" key="clasificacion">
+            <Table items="{clasificacion>/}" noDataText="Elige una liga">
+              <columns>
+                <Column width="3rem"><Text text="#"/></Column>
+                <Column><Text text="Equipo"/></Column>
+                <Column hAlign="End"><Text text="PJ"/></Column>
+                <Column hAlign="End"><Text text="G"/></Column>
+                <Column hAlign="End"><Text text="E"/></Column>
+                <Column hAlign="End"><Text text="P"/></Column>
+                <Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="GF"/></Column>
+                <Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="GC"/></Column>
+                <Column hAlign="End"><Text text="DG"/></Column>
+                <Column hAlign="End"><Text text="Puntos"/></Column>
+              </columns>
+              <items>
+                <ColumnListItem>
+                  <cells>
+                    <Text text="{clasificacion>posicion}"/>
+                    <Text text="{clasificacion>equipo}"/>
+                    <Text text="{clasificacion>jugados}"/>
+                    <Text text="{clasificacion>ganados}"/>
+                    <Text text="{clasificacion>empatados}"/>
+                    <Text text="{clasificacion>perdidos}"/>
+                    <Text text="{clasificacion>golesFavor}"/>
+                    <Text text="{clasificacion>golesContra}"/>
+                    <Text text="{clasificacion>diferencia}"/>
+                    <ObjectNumber number="{clasificacion>puntos}" emphasized="true"/>
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+          </IconTabFilter>
+
+          <IconTabFilter text="Goleadores" key="goleadores">
+            <Table items="{goleadores>/}" noDataText="Todavía no hay goles">
+              <columns>
+                <Column><Text text="Jugador"/></Column>
+                <Column><Text text="Equipo"/></Column>
+                <Column hAlign="End"><Text text="Goles"/></Column>
+              </columns>
+              <items>
+                <ColumnListItem>
+                  <cells>
+                    <Text text="{goleadores>nombre} {goleadores>apellidos}"/>
+                    <Text text="{goleadores>equipo}"/>
+                    <ObjectNumber number="{goleadores>goles}" emphasized="true"/>
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+          </IconTabFilter>
+
+          <IconTabFilter text="Calendario" key="calendario">
+            <Table id="partidos" growing="true" growingThreshold="50" noDataText="Sin partidos"
+              items="{path: '/Partidos', suspended: true,
+                      sorter: [{path: 'jornadaNumero'}, {path: 'fecha_hora'}]}">
+              <columns>
+                <Column width="6rem"><Text text="Jornada"/></Column>
+                <Column><Text text="Fecha y hora"/></Column>
+                <Column><Text text="Local"/></Column>
+                <Column><Text text="Visitante"/></Column>
+                <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Sede"/></Column>
+                <Column><Text text="Estado"/></Column>
+              </columns>
+              <items>
+                <ColumnListItem type="Active" press=".onVerMarcador">
+                  <cells>
+                    <Text text="{jornadaNumero}"/>
+                    <Text text="{fecha_hora}"/>
+                    <Text text="{localNombre}"/>
+                    <Text text="{visitanteNombre}"/>
+                    <Text text="{sedeNombre}"/>
+                    <Text text="{estado}"/>
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+          </IconTabFilter>
+        </items>
+      </IconTabBar>
+    </Page>
+  </App>
+</mvc:View>
