@@ -1,0 +1,79 @@
+<mvc:View
+  controllerName="football.equipo.controller.Plantilla"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:f="sap.ui.layout.form"
+  displayBlock="true">
+  <App>
+    <Page title="Mi equipo">
+      <subHeader>
+        <Toolbar>
+          <Label text="Equipo y liga:" labelFor="selInscripcion"/>
+          <Select id="selInscripcion" forceSelection="false" width="24rem" change=".onCambiarInscripcion"
+            items="{path: '/Inscripciones', sorter: [{path: 'ligaNombre'}, {path: 'equipoNombre'}]}">
+            <core:Item key="{ID}" text="{equipoNombre} · {ligaNombre} {temporada}"/>
+          </Select>
+        </Toolbar>
+      </subHeader>
+
+      <!-- Su contexto es la inscripción elegida en el desplegable -->
+      <Table id="plantilla" noDataText="Elige un equipo"
+        items="{path: 'plantilla', sorter: {path: 'dorsal'}}">
+        <headerToolbar>
+          <OverflowToolbar>
+            <Title text="Plantilla"/>
+            <ToolbarSpacer/>
+            <Button text="Alta de jugador" icon="sap-icon://add-employee" press=".onAbrirAlta"
+              enabled="{= !!%{ID} }"/>
+          </OverflowToolbar>
+        </headerToolbar>
+        <columns>
+          <Column width="5rem"><Text text="Dorsal"/></Column>
+          <Column><Text text="Nombre"/></Column>
+          <Column><Text text="Apellidos"/></Column>
+          <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Alta"/></Column>
+          <Column><Text text="Estado"/></Column>
+          <Column hAlign="End"><Text text=""/></Column>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <Text text="{dorsal}"/>
+              <Text text="{jugador/nombre}"/>
+              <Text text="{jugador/apellidos}"/>
+              <Text text="{fecha_alta}"/>
+              <ObjectStatus text="{= %{fecha_baja} ? 'Baja' : 'Activo' }"
+                state="{= %{fecha_baja} ? 'Error' : 'Success' }"/>
+              <Button text="Dar de baja" type="Transparent" press=".onDarDeBaja"
+                visible="{= !%{fecha_baja} }"/>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+
+      <dependents>
+        <Dialog id="dlgAlta" title="Alta de jugador">
+          <f:SimpleForm editable="true" layout="ResponsiveGridLayout">
+            <Label text="Documento de identidad" required="true"/>
+            <Input id="documento"/>
+            <Label text="Nombre" required="true"/>
+            <Input id="nombre"/>
+            <Label text="Apellidos" required="true"/>
+            <Input id="apellidos"/>
+            <Label text="Fecha de nacimiento"/>
+            <DatePicker id="fechaNacimiento" valueFormat="yyyy-MM-dd"/>
+            <Label text="Dorsal"/>
+            <StepInput id="dorsal" min="1" max="99" value="1"/>
+          </f:SimpleForm>
+          <beginButton>
+            <Button text="Dar de alta" type="Emphasized" press=".onAlta"/>
+          </beginButton>
+          <endButton>
+            <Button text="Cancelar" press=".onCerrarAlta"/>
+          </endButton>
+        </Dialog>
+      </dependents>
+    </Page>
+  </App>
+</mvc:View>
