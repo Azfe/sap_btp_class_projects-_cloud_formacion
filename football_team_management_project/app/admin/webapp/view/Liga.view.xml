@@ -1,0 +1,55 @@
+<mvc:View
+  controllerName="football.admin.controller.Liga"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:f="sap.ui.layout.form">
+  <Page title="{nombre} ({temporada})" showNavButton="true" navButtonPress=".onVolver">
+    <headerContent>
+      <Button text="Generar calendario" type="Emphasized" press=".onAbrirGenerar"/>
+    </headerContent>
+
+    <Table id="partidos" growing="true" growingThreshold="50"
+      noDataText="Sin partidos: genera el calendario"
+      items="{path: '/Partidos', suspended: true,
+              sorter: [{path: 'jornada/numero'}, {path: 'fecha_hora'}]}">
+      <columns>
+        <Column width="6rem"><Text text="Jornada"/></Column>
+        <Column><Text text="Fecha y hora"/></Column>
+        <Column><Text text="Local"/></Column>
+        <Column><Text text="Visitante"/></Column>
+        <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Sede"/></Column>
+        <Column><Text text="Estado"/></Column>
+      </columns>
+      <items>
+        <ColumnListItem type="Navigation" press=".onAbrirPartido">
+          <cells>
+            <Text text="{jornada/numero}"/>
+            <Text text="{fecha_hora}"/>
+            <Text text="{local/equipo/nombre}"/>
+            <Text text="{visitante/equipo/nombre}"/>
+            <Text text="{sede/nombre}"/>
+            <ObjectStatus text="{estado}"
+              state="{= %{estado} === 'finalizado' ? 'Success' : %{estado} === 'aplazado' ? 'Warning' : 'None' }"/>
+          </cells>
+        </ColumnListItem>
+      </items>
+    </Table>
+
+    <dependents>
+      <Dialog id="dlgGenerar" title="Generar calendario">
+        <f:SimpleForm editable="true" layout="ResponsiveGridLayout">
+          <Label text="Fecha de inicio" required="true"/>
+          <DatePicker id="fechaInicio" valueFormat="yyyy-MM-dd"/>
+          <Label text="Ida y vuelta"/>
+          <CheckBox id="idaYVuelta" selected="true"/>
+        </f:SimpleForm>
+        <beginButton>
+          <Button text="Generar" type="Emphasized" press=".onGenerar"/>
+        </beginButton>
+        <endButton>
+          <Button text="Cancelar" press=".onCerrarDialogo"/>
+        </endButton>
+      </Dialog>
+    </dependents>
+  </Page>
+</mvc:View>

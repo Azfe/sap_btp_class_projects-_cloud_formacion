@@ -1,0 +1,23 @@
+<mvc:View
+  controllerName="football.admin.controller.Ligas"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m">
+  <Page title="Ligas">
+    <Table items="{path: '/Ligas', sorter: {path: 'nombre'}}">
+      <columns>
+        <Column><Text text="Liga"/></Column>
+        <Column><Text text="Temporada"/></Column>
+        <Column><Text text="Franja"/></Column>
+      </columns>
+      <items>
+        <ColumnListItem type="Navigation" press=".onAbrirLiga">
+          <cells>
+            <ObjectIdentifier title="{nombre}"/>
+            <Text text="{temporada}"/>
+            <Text text="{franja}"/>
+          </cells>
+        </ColumnListItem>
+      </items>
+    </Table>
+  </Page>
+</mvc:View>

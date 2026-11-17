@@ -1,0 +1,174 @@
+<mvc:View
+  controllerName="football.admin.controller.Partido"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:f="sap.ui.layout.form">
+  <Page title="Acta del partido" showNavButton="true" navButtonPress=".onVolver">
+    <headerContent>
+      <Button text="Aplazar" press=".onAplazar"
+        enabled="{= %{estado} === 'programado' }"/>
+      <Button text="Finalizar" type="Emphasized" press=".onFinalizar"
+        enabled="{= %{estado} === 'programado' || %{estado} === 'en_juego' }"/>
+    </headerContent>
+
+    <ObjectHeader title="{local/equipo/nombre} - {visitante/equipo/nombre}">
+      <statuses>
+        <ObjectStatus text="{estado}"/>
+      </statuses>
+      <attributes>
+        <ObjectAttribute title="Jornada" text="{jornada/numero}"/>
+        <ObjectAttribute title="Fecha" text="{fecha_hora}"/>
+        <ObjectAttribute title="Sede" text="{sede/nombre}"/>
+      </attributes>
+    </ObjectHeader>
+
+    <!-- Jugadores que han participado -->
+    <Table id="participaciones" items="{path: 'participaciones', sorter: {path: 'plantilla/dorsal'}}">
+      <headerToolbar>
+        <OverflowToolbar>
+          <Title text="Jugadores"/>
+          <ToolbarSpacer/>
+          <Button text="Añadir jugador" icon="sap-icon://add" press=".onAbrirParticipacion"
+            enabled="{= %{estado} === 'programado' || %{estado} === 'en_juego' }"/>
+          <Button text="Gol" press=".onAbrirGol"
+            enabled="{= %{estado} === 'programado' || %{estado} === 'en_juego' }"/>
+          <Button text="Tarjeta" press=".onAbrirTarjeta"
+            enabled="{= %{estado} === 'programado' || %{estado} === 'en_juego' }"/>
+        </OverflowToolbar>
+      </headerToolbar>
+      <columns>
+        <Column><Text text="Equipo"/></Column>
+        <Column width="5rem"><Text text="Dorsal"/></Column>
+        <Column><Text text="Jugador"/></Column>
+        <Column width="6rem"><Text text="Titular"/></Column>
+        <Column width="6rem"><Text text="Minutos"/></Column>
+      </columns>
+      <items>
+        <ColumnListItem>
+          <cells>
+            <Text text="{plantilla/inscripcion/equipo/nombre}"/>
+            <Text text="{plantilla/dorsal}"/>
+            <Text text="{plantilla/jugador/nombre} {plantilla/jugador/apellidos}"/>
+            <Text text="{= %{titular} ? 'Sí' : 'No' }"/>
+            <Text text="{minutos_jugados}"/>
+          </cells>
+        </ColumnListItem>
+      </items>
+    </Table>
+
+    <!-- Goleadores -->
+    <Table id="goles" headerText="Goles"
+      items="{path: '/Goles', suspended: true, sorter: {path: 'minuto'}}">
+      <columns>
+        <Column width="6rem"><Text text="Minuto"/></Column>
+        <Column><Text text="Jugador"/></Column>
+        <Column><Text text="Equipo"/></Column>
+        <Column><Text text="Tipo"/></Column>
+      </columns>
+      <items>
+        <ColumnListItem>
+          <cells>
+            <Text text="{minuto}'"/>
+            <Text text="{participacion/plantilla/jugador/nombre} {participacion/plantilla/jugador/apellidos}"/>
+            <Text text="{participacion/plantilla/inscripcion/equipo/nombre}"/>
+            <Text text="{tipo}"/>
+          </cells>
+        </ColumnListItem>
+      </items>
+    </Table>
+
+    <!-- Amonestados -->
+    <Table id="amonestaciones" headerText="Tarjetas"
+      items="{path: '/Amonestaciones', suspended: true, sorter: {path: 'minuto'}}">
+      <columns>
+        <Column width="6rem"><Text text="Minuto"/></Column>
+        <Column><Text text="Jugador"/></Column>
+        <Column><Text text="Equipo"/></Column>
+        <Column><Text text="Tarjeta"/></Column>
+      </columns>
+      <items>
+        <ColumnListItem>
+          <cells>
+            <Text text="{minuto}'"/>
+            <Text text="{participacion/plantilla/jugador/nombre} {participacion/plantilla/jugador/apellidos}"/>
+            <Text text="{participacion/plantilla/inscripcion/equipo/nombre}"/>
+            <ObjectStatus text="{tipo}" state="{= %{tipo} === 'roja' ? 'Error' : 'Warning' }"/>
+          </cells>
+        </ColumnListItem>
+      </items>
+    </Table>
+
+    <dependents>
+      <!-- Añadir un jugador al acta: solo se ofrecen los disponibles -->
+      <Dialog id="dlgParticipacion" title="Añadir jugador al acta">
+        <f:SimpleForm editable="true" layout="ResponsiveGridLayout">
+          <Label text="Jugador" required="true"/>
+          <Select id="selDisponible" width="100%" items="{disponibles>/}">
+            <core:Item key="{disponibles>ID}"
+              text="{disponibles>inscripcion/equipo/nombre} · {disponibles>dorsal} · {disponibles>jugador/nombre} {disponibles>jugador/apellidos}"/>
+          </Select>
+          <Label text="Titular"/>
+          <CheckBox id="chkTitular" selected="true"/>
+          <Label text="Minutos jugados"/>
+          <StepInput id="minutosJugados" min="0" max="130" value="90"/>
+        </f:SimpleForm>
+        <beginButton>
+          <Button text="Añadir" type="Emphasized" press=".onRegistrarParticipacion"/>
+        </beginButton>
+        <endButton>
+          <Button text="Cancelar" press=".onCerrarDialogo"/>
+        </endButton>
+      </Dialog>
+
+      <!-- Gol: solo jugadores que ya están en el acta -->
+      <Dialog id="dlgGol" title="Registrar gol">
+        <f:SimpleForm editable="true" layout="ResponsiveGridLayout">
+          <Label text="Jugador" required="true"/>
+          <Select id="selGoleador" width="100%" items="{path: 'participaciones', templateShareable: false}">
+            <core:Item key="{plantilla_ID}"
+              text="{plantilla/inscripcion/equipo/nombre} · {plantilla/dorsal} · {plantilla/jugador/nombre} {plantilla/jugador/apellidos}"/>
+          </Select>
+          <Label text="Minuto"/>
+          <StepInput id="minutoGol" min="0" max="130" value="1"/>
+          <Label text="Tipo"/>
+          <Select id="selTipoGol">
+            <core:Item key="normal" text="Normal"/>
+            <core:Item key="penalti" text="Penalti"/>
+            <core:Item key="propia_meta" text="En propia meta"/>
+          </Select>
+        </f:SimpleForm>
+        <beginButton>
+          <Button text="Registrar" type="Emphasized" press=".onRegistrarGol"/>
+        </beginButton>
+        <endButton>
+          <Button text="Cancelar" press=".onCerrarDialogo"/>
+        </endButton>
+      </Dialog>
+
+      <!-- Tarjeta: solo jugadores que ya están en el acta -->
+      <Dialog id="dlgTarjeta" title="Registrar tarjeta">
+        <f:SimpleForm editable="true" layout="ResponsiveGridLayout">
+          <Label text="Jugador" required="true"/>
+          <Select id="selAmonestado" width="100%" items="{path: 'participaciones', templateShareable: false}">
+            <core:Item key="{plantilla_ID}"
+              text="{plantilla/inscripcion/equipo/nombre} · {plantilla/dorsal} · {plantilla/jugador/nombre} {plantilla/jugador/apellidos}"/>
+          </Select>
+          <Label text="Minuto"/>
+          <StepInput id="minutoTarjeta" min="0" max="130" value="1"/>
+          <Label text="Tarjeta"/>
+          <Select id="selTipoTarjeta">
+            <core:Item key="amarilla" text="Amarilla"/>
+            <core:Item key="roja" text="Roja"/>
+          </Select>
+        </f:SimpleForm>
+        <beginButton>
+          <Button text="Registrar" type="Emphasized" press=".onRegistrarTarjeta"/>
+        </beginButton>
+        <endButton>
+          <Button text="Cancelar" press=".onCerrarDialogo"/>
+        </endButton>
+      </Dialog>
+    </dependents>
+  </Page>
+</mvc:View>
