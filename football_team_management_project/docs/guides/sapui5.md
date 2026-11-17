@@ -10,7 +10,7 @@ Hay una app por rol, cada una contra su servicio:
 | `app/equipo` | `admin_equipo` | `EquipoService` | Plantilla de sus equipos, con alta y baja de jugadores |
 | `app/consulta` | `jugador` (y cualquier usuario autenticado) | `ConsultaService` | Clasificación, goleadores y calendario de una liga |
 
-**Cómo se ha comprobado:** el código se validó con el linter oficial (`@ui5/linter`), sin avisos, y todas las peticiones OData que generan las pantallas se ejecutaron contra el servidor con los datos de prueba. No se ha abierto en un navegador real, así que conviene seguir el apartado 9 al probarlo.
+**Cómo se ha comprobado:** el código se validó con el linter oficial (`@ui5/linter`), sin avisos, y todas las peticiones OData que generan las pantallas se ejecutaron contra el servidor con los datos de prueba. Las pantallas se cargaron en un Chromium sin interfaz: las de admin completas y las de equipo y consulta con el equipo o la liga elegidos desde código. En ese navegador de pruebas el desplegable de la barra superior no se pudo dibujar por un problema de fuentes del entorno, y los diálogos no se probaron pulsando botones, así que conviene seguir el apartado 9 al probarlo.
 
 ## 1. Conceptos
 
@@ -430,7 +430,7 @@ Muestra los partidos de la liga y el botón **Generar calendario**, que abre un 
             <Text text="{visitante/equipo/nombre}"/>
             <Text text="{sede/nombre}"/>
             <ObjectStatus text="{estado}"
-              state="{= ${estado} === 'finalizado' ? 'Success' : ${estado} === 'aplazado' ? 'Warning' : 'None' }"/>
+              state="{= %{estado} === 'finalizado' ? 'Success' : %{estado} === 'aplazado' ? 'Warning' : 'None' }"/>
           </cells>
         </ColumnListItem>
       </items>
@@ -534,9 +534,9 @@ Cabecera con los equipos, la fecha y la sede, y tres tablas: jugadores, goles y 
   <Page title="Acta del partido" showNavButton="true" navButtonPress=".onVolver">
     <headerContent>
       <Button text="Aplazar" press=".onAplazar"
-        enabled="{= ${estado} === 'programado' }"/>
+        enabled="{= %{estado} === 'programado' }"/>
       <Button text="Finalizar" type="Emphasized" press=".onFinalizar"
-        enabled="{= ${estado} === 'programado' || ${estado} === 'en_juego' }"/>
+        enabled="{= %{estado} === 'programado' || %{estado} === 'en_juego' }"/>
     </headerContent>
 
     <ObjectHeader title="{local/equipo/nombre} - {visitante/equipo/nombre}">
@@ -557,11 +557,11 @@ Cabecera con los equipos, la fecha y la sede, y tres tablas: jugadores, goles y 
           <Title text="Jugadores"/>
           <ToolbarSpacer/>
           <Button text="Añadir jugador" icon="sap-icon://add" press=".onAbrirParticipacion"
-            enabled="{= ${estado} === 'programado' || ${estado} === 'en_juego' }"/>
+            enabled="{= %{estado} === 'programado' || %{estado} === 'en_juego' }"/>
           <Button text="Gol" press=".onAbrirGol"
-            enabled="{= ${estado} === 'programado' || ${estado} === 'en_juego' }"/>
+            enabled="{= %{estado} === 'programado' || %{estado} === 'en_juego' }"/>
           <Button text="Tarjeta" press=".onAbrirTarjeta"
-            enabled="{= ${estado} === 'programado' || ${estado} === 'en_juego' }"/>
+            enabled="{= %{estado} === 'programado' || %{estado} === 'en_juego' }"/>
         </OverflowToolbar>
       </headerToolbar>
       <columns>
@@ -577,7 +577,7 @@ Cabecera con los equipos, la fecha y la sede, y tres tablas: jugadores, goles y 
             <Text text="{plantilla/inscripcion/equipo/nombre}"/>
             <Text text="{plantilla/dorsal}"/>
             <Text text="{plantilla/jugador/nombre} {plantilla/jugador/apellidos}"/>
-            <Text text="{= ${titular} ? 'Sí' : 'No' }"/>
+            <Text text="{= %{titular} ? 'Sí' : 'No' }"/>
             <Text text="{minutos_jugados}"/>
           </cells>
         </ColumnListItem>
@@ -620,7 +620,7 @@ Cabecera con los equipos, la fecha y la sede, y tres tablas: jugadores, goles y 
             <Text text="{minuto}'"/>
             <Text text="{participacion/plantilla/jugador/nombre} {participacion/plantilla/jugador/apellidos}"/>
             <Text text="{participacion/plantilla/inscripcion/equipo/nombre}"/>
-            <ObjectStatus text="{tipo}" state="{= ${tipo} === 'roja' ? 'Error' : 'Warning' }"/>
+            <ObjectStatus text="{tipo}" state="{= %{tipo} === 'roja' ? 'Error' : 'Warning' }"/>
           </cells>
         </ColumnListItem>
       </items>
@@ -701,7 +701,8 @@ Cabecera con los equipos, la fecha y la sede, y tres tablas: jugadores, goles y 
 </mvc:View>
 ```
 
-- **Botones desactivados:** las expresiones `{= ${estado} === 'programado' || ... }` reproducen en pantalla las reglas del servidor. El acta solo se edita con el partido `programado` o `en_juego`. El servidor lo comprueba igualmente.
+- **Botones desactivados:** las expresiones `{= %{estado} === 'programado' || ... }` reproducen en pantalla las reglas del servidor. El acta solo se edita con el partido `programado` o `en_juego`. El servidor lo comprueba igualmente.
+- **`%{estado}` y no `${estado}`:** con el modelo OData V4, `${...}` dentro de una expresión convierte el valor al tipo de la propiedad del control. En `enabled`, que es booleana, `'finalizado'` no se puede convertir, la expresión falla y el botón se queda activo (en la consola aparece `FormatException ... is not a valid boolean value`). `%{...}` usa el valor tal cual, sin convertirlo.
 - **Desplegable de "Añadir jugador":** usa el modelo `disponibles`, que se llena con `jugadoresDisponibles`. No aparecen los sancionados ni los dados de baja.
 - **Desplegables de gol y tarjeta:** usan `{participaciones}`, así que solo ofrecen jugadores que ya están en el acta.
 
@@ -881,7 +882,7 @@ Una sola pantalla: el delegado elige uno de sus equipos en el desplegable y ve s
             <Title text="Plantilla"/>
             <ToolbarSpacer/>
             <Button text="Alta de jugador" icon="sap-icon://add-employee" press=".onAbrirAlta"
-              enabled="{= !!${ID} }"/>
+              enabled="{= !!%{ID} }"/>
           </OverflowToolbar>
         </headerToolbar>
         <columns>
@@ -899,10 +900,10 @@ Una sola pantalla: el delegado elige uno de sus equipos en el desplegable y ve s
               <Text text="{jugador/nombre}"/>
               <Text text="{jugador/apellidos}"/>
               <Text text="{fecha_alta}"/>
-              <ObjectStatus text="{= ${fecha_baja} ? 'Baja' : 'Activo' }"
-                state="{= ${fecha_baja} ? 'Error' : 'Success' }"/>
+              <ObjectStatus text="{= %{fecha_baja} ? 'Baja' : 'Activo' }"
+                state="{= %{fecha_baja} ? 'Error' : 'Success' }"/>
               <Button text="Dar de baja" type="Transparent" press=".onDarDeBaja"
-                visible="{= !${fecha_baja} }"/>
+                visible="{= !%{fecha_baja} }"/>
             </cells>
           </ColumnListItem>
         </items>
@@ -1240,6 +1241,8 @@ Con los datos de prueba recién cargados:
 |---|---|
 | Página en blanco | Abre las herramientas del navegador (F12) → **Console**. Suele ser un error de sintaxis en una vista XML o un nombre mal escrito en `manifest.json`. |
 | `404` en `sap-ui-core.js` | La versión indicada en `index.html` ya no está en el CDN. Cámbiala por una LTS vigente. |
+| Un botón sigue activo aunque su expresión `{= ...}` debería desactivarlo | La expresión usa `${campo}` en lugar de `%{campo}`. Con OData V4 hay que usar `%{}` en las expresiones. |
+| En la consola sale un 404 de `Component-preload.js` | Es normal: SAPUI5 busca primero una versión empaquetada de la app y, como no existe, carga los ficheros uno a uno. |
 | `403` o tablas vacías | El usuario no tiene el rol del servicio. Abre la app en una ventana de incógnito con el usuario correcto. |
 | Error "Forbidden" al pulsar un botón | El delegado intenta actuar sobre un equipo que no es suyo, o el usuario no es admin. |
 | Los cambios en el código no se ven | Recarga sin caché con Ctrl+Shift+R. |
